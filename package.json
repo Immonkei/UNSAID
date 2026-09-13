@@ -1,0 +1,20 @@
+{
+  "name": "unsaid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UNSAID — An anonymous emotional thought-sharing platform with moderation and Facebook Page publishing",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "db:generate": "npm --prefix backend run prisma:generate",
+    "db:migrate": "npm --prefix backend run prisma:migrate",
+    "db:seed": "npm --prefix backend run seed",
+    "db:up": "docker compose up -d"
+  },
+  "keywords": ["anonymous", "confessions", "nextjs", "express", "prisma", "meta-api"],
+  "author": "",
+  "license": "ISC"
+}
