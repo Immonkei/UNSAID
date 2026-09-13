@@ -12,4 +12,7 @@ export const ENV = {
   FB_PAGE_ID: process.env.FB_PAGE_ID || '',
   FB_PAGE_ACCESS_TOKEN: process.env.FB_PAGE_ACCESS_TOKEN || '',
   FB_API_VERSION: process.env.FB_API_VERSION || 'v19.0',
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://iifwbcrugzlsxkhgmcvd.supabase.co',
+  SUPABASE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '',
+  SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || 'unsaid-images',
 };

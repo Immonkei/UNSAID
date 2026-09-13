@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { postService } from '../services/post.service';
+import { storageService } from '../services/storage.service';
 import { createPostSchema, reportPostSchema, likePostSchema } from '../validators/post.validator';
 
 export class PostController {
@@ -35,11 +36,15 @@ export class PostController {
         return;
       }
 
-      const fileUrl = `/uploads/${req.file.filename}`;
+      const imageUrl = await storageService.uploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
 
       res.status(200).json({
         success: true,
-        imageUrl: fileUrl,
+        imageUrl,
       });
     } catch (err) {
       next(err);
