@@ -147,10 +147,10 @@ export default function HomePage() {
       )}
 
       {/* Feed Section */}
-      <section id="thoughts" className="space-y-6 pt-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
-          <div>
-            <h2 className="text-xl font-serif font-light text-neutral-100">
+      <section id="thoughts" className="space-y-6 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/[0.06] pb-5">
+          <div className="space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 tracking-tight">
               Unspoken Archives
             </h2>
             <p className="text-xs text-neutral-500 font-light">
@@ -158,26 +158,26 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {/* Search Input */}
-            <div className="relative flex-1 sm:w-56">
-              <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
+            <div className="relative flex-1 sm:w-60">
+              <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3.5 top-2.5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search words..."
-                className="w-full bg-[#0c0c11] border border-white/[0.08] rounded-full pl-8 pr-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                placeholder="Search unsaid thoughts..."
+                className="w-full bg-[#0c0c11]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[#7C99B8]/70 focus:ring-1 focus:ring-[#7C99B8]/30 transition-all shadow-inner"
               />
             </div>
 
             {/* Sort Toggle */}
-            <div className="flex items-center bg-[#0c0c11] p-0.5 rounded-full border border-white/[0.08] text-xs">
+            <div className="flex items-center bg-[#0c0c11]/90 p-1 rounded-full border border-white/[0.08] text-xs">
               <button
                 onClick={() => setSortBy('latest')}
-                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
+                className={`px-3.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
                   sortBy === 'latest'
-                    ? 'bg-neutral-800 text-neutral-100 shadow-sm'
+                    ? 'bg-neutral-200 text-neutral-950 font-semibold shadow-sm'
                     : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
@@ -185,9 +185,9 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => setSortBy('popular')}
-                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
+                className={`px-3.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
                   sortBy === 'popular'
-                    ? 'bg-neutral-800 text-neutral-100 shadow-sm'
+                    ? 'bg-neutral-200 text-neutral-950 font-semibold shadow-sm'
                     : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
