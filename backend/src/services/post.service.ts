@@ -45,10 +45,13 @@ export class PostService {
     }
 
     if (search && search.trim()) {
-      whereClause.content = {
-        contains: search.trim(),
-        mode: 'insensitive',
-      };
+      const rawTerm = search.trim();
+      const cleanTerm = rawTerm.startsWith('#') ? rawTerm.slice(1).trim() : rawTerm;
+      whereClause.OR = [
+        { content: { contains: rawTerm, mode: 'insensitive' } },
+        { content: { contains: cleanTerm, mode: 'insensitive' } },
+        { recipient: { contains: cleanTerm, mode: 'insensitive' } },
+      ];
     }
 
     // Order by likes count or recency

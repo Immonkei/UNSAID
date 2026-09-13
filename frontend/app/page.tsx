@@ -58,19 +58,21 @@ export default function HomePage() {
 
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
-    setSelectedTag(null);
+    // Find matching tag if any, or clear selected tag
+    const matchingTag = POPULAR_TAGS.find((t) => t.categoryHint === cat);
+    setSelectedTag(matchingTag ? matchingTag.tag : null);
   };
 
   const handleTagSelect = (tag: string | null) => {
     setSelectedTag(tag);
     if (!tag) {
-      setSearchQuery('');
+      // Reset to All
+      setSelectedCategory('All');
     } else {
       const match = POPULAR_TAGS.find((t) => t.tag === tag);
-      if (match?.categoryHint && selectedCategory === 'All') {
+      if (match?.categoryHint) {
         setSelectedCategory(match.categoryHint);
       }
-      setSearchQuery(match ? match.label : `#${tag}`);
     }
   };
 
