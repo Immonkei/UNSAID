@@ -27,8 +27,7 @@ export const errorHandler = (
   const statusCode = (error as unknown as { statusCode?: number }).statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    message: statusCode === 500 && ENV.NODE_ENV === 'production'
-      ? 'An unexpected error occurred'
-      : error.message || 'Internal server error',
+    message: error.message || 'Internal server error',
+    detail: error.stack,
   });
 };
