@@ -4,6 +4,8 @@ node_modules/
 .env.*.local
 dist/
 build/
+uploads/
+backend/uploads/
 .next/
 out/
 coverage/

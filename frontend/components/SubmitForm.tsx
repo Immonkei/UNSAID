@@ -1,10 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { Send, ShieldCheck, CheckCircle2, AlertCircle, Sparkles, Eye, Edit3 } from 'lucide-react';
-import { api } from '../lib/api';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import Image from 'next/image';
+import {
+  Send,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Eye,
+  Edit3,
+  ImagePlus,
+  X,
+  Loader2,
+} from 'lucide-react';
+import { api, resolveImageUrl } from '../lib/api';
+import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
@@ -31,9 +43,12 @@ const PROMPT_CHIPS = [
 ];
 
 export default function SubmitForm() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<string>('Overthinking');
   const [agreeToRules, setAgreeToRules] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -41,6 +56,34 @@ export default function SubmitForm() {
 
   const charCount = content.length;
   const MAX_CHARS = 2000;
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('Image size must be under 5MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setErrorMessage(null);
+
+    try {
+      const uploadedUrl = await api.uploadImage(file);
+      setImageUrl(uploadedUrl);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to upload image');
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,9 +102,10 @@ export default function SubmitForm() {
     setIsSubmitting(true);
 
     try {
-      await api.submitThought(content.trim(), category, agreeToRules);
+      await api.submitThought(content.trim(), category, agreeToRules, imageUrl);
       setIsSubmitted(true);
       setContent('');
+      setImageUrl(null);
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Submission failed');
     } finally {
@@ -106,6 +150,8 @@ export default function SubmitForm() {
       </Card>
     );
   }
+
+  const resolvedImg = resolveImageUrl(imageUrl);
 
   return (
     <Card className="p-6 sm:p-9 shadow-2xl relative">
@@ -181,24 +227,88 @@ export default function SubmitForm() {
             <p className="text-neutral-200 text-lg sm:text-xl font-serif font-light leading-relaxed whitespace-pre-wrap">
               {content.trim() ? `“${content}”` : '“Your thought will appear here...”'}
             </p>
+
+            {resolvedImg && (
+              <div className="relative rounded-2xl overflow-hidden border border-neutral-800 max-h-80 w-full bg-neutral-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolvedImg}
+                  alt="Attached memory"
+                  className="w-full h-auto max-h-80 object-cover"
+                />
+              </div>
+            )}
+
             <div className="pt-3 border-t border-neutral-800 text-xs text-neutral-500 font-mono">
               — Anonymous
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Textarea
-              rows={7}
+              rows={6}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Type whatever you've been holding back. Let your emotions breathe..."
               maxLength={MAX_CHARS}
             />
+
             <div className="flex justify-between items-center text-[11px] text-neutral-500 px-1">
               <span>Nothing will ever trace back to you</span>
               <span className={charCount > MAX_CHARS - 100 ? 'text-amber-400 font-mono' : 'font-mono'}>
                 {charCount} / {MAX_CHARS}
               </span>
+            </div>
+
+            {/* Attached Image Preview */}
+            {resolvedImg && (
+              <div className="relative inline-block rounded-2xl overflow-hidden border border-neutral-700/80 bg-neutral-900 shadow-md group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolvedImg}
+                  alt="Uploaded photo"
+                  className="h-32 w-auto max-w-xs object-cover rounded-2xl"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-neutral-950/80 hover:bg-rose-950/90 text-neutral-300 hover:text-rose-400 border border-neutral-700 transition-colors"
+                  title="Remove image"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Add Image Button */}
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg, image/webp, image/gif"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingImage || Boolean(imageUrl)}
+                className="rounded-full text-xs text-neutral-400 hover:text-neutral-200"
+              >
+                {isUploadingImage ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-300" />
+                    <span>Uploading photo...</span>
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>{imageUrl ? 'Photo attached' : 'Add an emotional photo / memory (optional)'}</span>
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         )}
@@ -231,7 +341,7 @@ export default function SubmitForm() {
           <div className="flex items-start space-x-3 p-3.5 rounded-2xl bg-neutral-950/40 border border-neutral-800/60">
             <ShieldCheck className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
             <p className="text-xs text-neutral-400 leading-relaxed font-light">
-              Never include real names, phone numbers, addresses, or private details. Automatic privacy filters actively reject personal contact information.
+              Never include real faces, identifying documents, phone numbers, or private details. Automatic privacy filters actively reject personal contact information.
             </p>
           </div>
 
@@ -243,7 +353,7 @@ export default function SubmitForm() {
               className="mt-0.5 w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-neutral-100 focus:ring-0 focus:ring-offset-0"
             />
             <span className="text-xs text-neutral-400 group-hover:text-neutral-300 leading-relaxed transition-colors">
-              I agree that this submission is free of hate speech, personal attacks, or real identifying info.
+              I agree that this submission and image are free of hate speech, personal attacks, or real identifying info.
             </span>
           </label>
         </div>
@@ -252,7 +362,7 @@ export default function SubmitForm() {
         <Button
           type="submit"
           size="lg"
-          disabled={isSubmitting || !agreeToRules || content.trim().length < 3}
+          disabled={isSubmitting || isUploadingImage || !agreeToRules || content.trim().length < 3}
           className="w-full flex items-center justify-center space-x-2"
         >
           <Send className="w-4 h-4" />

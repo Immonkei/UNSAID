@@ -6,7 +6,11 @@ export class PostController {
   async createPost(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validated = createPostSchema.parse(req.body);
-      const result = await postService.createPost(validated.content, validated.category);
+      const result = await postService.createPost(
+        validated.content,
+        validated.category,
+        validated.imageUrl
+      );
 
       res.status(201).json({
         success: true,
@@ -15,6 +19,27 @@ export class PostController {
           id: result.id,
           status: result.moderationStatus,
         },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async uploadImage(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({
+          success: false,
+          message: 'No image file uploaded',
+        });
+        return;
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+
+      res.status(200).json({
+        success: true,
+        imageUrl: fileUrl,
       });
     } catch (err) {
       next(err);

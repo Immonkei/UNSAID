@@ -5,11 +5,12 @@ export class PostService {
   /**
    * Submit an anonymous thought. Enters PENDING state.
    */
-  async createPost(content: string, category: string) {
+  async createPost(content: string, category: string, imageUrl?: string | null) {
     const post = await prisma.post.create({
       data: {
         content,
         category,
+        imageUrl: imageUrl || null,
         moderationStatus: 'PENDING',
         facebookStatus: 'NOT_PUBLISHED',
       },
@@ -46,6 +47,7 @@ export class PostService {
           id: true,
           content: true,
           category: true,
+          imageUrl: true,
           createdAt: true,
           approvedAt: true,
           _count: {
@@ -61,6 +63,7 @@ export class PostService {
         id: p.id,
         content: p.content,
         category: p.category,
+        imageUrl: p.imageUrl,
         author: 'Anonymous',
         createdAt: p.approvedAt || p.createdAt,
         likeCount: p._count.likes,
@@ -87,6 +90,7 @@ export class PostService {
         id: true,
         content: true,
         category: true,
+        imageUrl: true,
         createdAt: true,
         approvedAt: true,
         _count: {
@@ -103,6 +107,7 @@ export class PostService {
       id: post.id,
       content: post.content,
       category: post.category,
+      imageUrl: post.imageUrl,
       author: 'Anonymous',
       createdAt: post.approvedAt || post.createdAt,
       likeCount: post._count.likes,

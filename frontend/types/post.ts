@@ -14,6 +14,7 @@ export interface Post {
   id: string;
   content: string;
   category: Category | string;
+  imageUrl?: string | null;
   author: 'Anonymous';
   createdAt: string;
   likeCount: number;
@@ -23,6 +24,7 @@ export interface AdminPost {
   id: string;
   content: string;
   category: string;
+  imageUrl?: string | null;
   moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   facebookStatus: 'NOT_PUBLISHED' | 'PUBLISHING' | 'PUBLISHED' | 'FAILED';
   facebookPostId?: string | null;

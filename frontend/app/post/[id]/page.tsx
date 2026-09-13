@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, ImageIcon, Share2, Flag, Check } from 'lucide-react';
 import { Post } from '../../../types/post';
-import { api } from '../../../lib/api';
+import { api, resolveImageUrl } from '../../../lib/api';
 import QuoteCardModal from '../../../components/QuoteCardModal';
 
 export default function SinglePostPage() {
@@ -130,6 +130,17 @@ export default function SinglePostPage() {
           <blockquote className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 leading-relaxed whitespace-pre-wrap selection:bg-neutral-800">
             &ldquo;{post.content}&rdquo;
           </blockquote>
+
+          {post.imageUrl && (
+            <div className="relative rounded-3xl overflow-hidden border border-neutral-800 max-h-[500px] w-full bg-neutral-950/80">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={resolveImageUrl(post.imageUrl) || ''}
+                alt="Memory attached to this thought"
+                className="w-full h-auto max-h-[500px] object-contain rounded-3xl"
+              />
+            </div>
+          )}
 
           <div className="pt-6 border-t border-neutral-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <span className="text-xs text-neutral-400 font-mono italic">

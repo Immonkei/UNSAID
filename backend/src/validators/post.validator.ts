@@ -34,6 +34,7 @@ export const createPostSchema = z.object({
   category: z.enum(VALID_CATEGORIES, {
     errorMap: () => ({ message: 'Please select a valid category' }),
   }),
+  imageUrl: z.string().optional().nullable(),
   agreeToRules: z
     .boolean()
     .refine((val) => val === true, {

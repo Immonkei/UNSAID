@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Heart, Flag, Share2, ImageIcon } from 'lucide-react';
 import { Post } from '../types/post';
-import { api } from '../lib/api';
+import { api, resolveImageUrl } from '../lib/api';
 import QuoteCardModal from './QuoteCardModal';
 import { Card, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
@@ -31,6 +31,8 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
   const [reportReason, setReportReason] = useState('Spam');
   const [isReporting, setIsReporting] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
+
+  const resolvedImg = resolveImageUrl(post.imageUrl);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,8 +84,8 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
         {/* Top subtle highlight line */}
         <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
 
-        <CardContent className="p-6 sm:p-7 pb-4 sm:pb-4">
-          <div className="flex items-center justify-between text-xs text-neutral-400 mb-5">
+        <CardContent className="p-6 sm:p-7 pb-4 sm:pb-4 space-y-4">
+          <div className="flex items-center justify-between text-xs text-neutral-400">
             <Badge variant="secondary" className="px-3 py-0.5 text-[11px] font-mono">
               #{post.category}
             </Badge>
@@ -100,6 +102,18 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
             <p className="text-neutral-200 text-lg sm:text-[1.2rem] font-light leading-relaxed whitespace-pre-wrap font-serif selection:bg-neutral-800">
               &ldquo;{post.content}&rdquo;
             </p>
+          )}
+
+          {/* Attached Image */}
+          {resolvedImg && (
+            <div className="relative rounded-2xl overflow-hidden border border-neutral-800/80 max-h-72 w-full bg-neutral-950/80">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={resolvedImg}
+                alt="Attached memory"
+                className="w-full h-auto max-h-72 object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+              />
+            </div>
           )}
         </CardContent>
 

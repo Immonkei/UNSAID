@@ -16,7 +16,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AdminPost, ReportItem } from '../../types/post';
-import { api, getAdminToken, clearAdminToken } from '../../lib/api';
+import { api, getAdminToken, clearAdminToken, resolveImageUrl } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -380,6 +380,17 @@ export default function AdminDashboardPage() {
                     <p className="text-neutral-100 text-base sm:text-lg font-serif font-light leading-relaxed whitespace-pre-wrap">
                       &ldquo;{post.content}&rdquo;
                     </p>
+
+                    {post.imageUrl && (
+                      <div className="relative rounded-2xl overflow-hidden border border-neutral-800 max-h-60 max-w-sm bg-neutral-950">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={resolveImageUrl(post.imageUrl) || ''}
+                          alt="Submitted image"
+                          className="w-full h-auto max-h-60 object-contain rounded-2xl"
+                        />
+                      </div>
+                    )}
 
                     {post.facebookError && (
                       <div className="flex items-center space-x-2 text-[11px] text-rose-400 bg-rose-950/20 p-3 rounded-xl border border-rose-900/40">

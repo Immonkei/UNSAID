@@ -2,6 +2,16 @@ import { Post, AdminPost, ReportItem, Pagination } from '../types/post';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+// Helper to resolve absolute image URL for uploaded photos
+export const resolveImageUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  const backendBase = process.env.NEXT_PUBLIC_API_URL
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '')
+    : 'http://localhost:5000';
+  return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 // Helper for anonymous client identifier (UUID stored in localStorage)
 export const getAnonymousIdentifier = (): string => {
   if (typeof window === 'undefined') return 'server_side_call';
@@ -58,15 +68,30 @@ export const api = {
     return json.data;
   },
 
+  async uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`${API_BASE_URL}/posts/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json.message || 'Failed to upload image');
+    }
+    return json.imageUrl;
+  },
+
   async submitThought(
     content: string,
     category: string,
-    agreeToRules: boolean
+    agreeToRules: boolean,
+    imageUrl?: string | null
   ): Promise<{ id: string; message: string }> {
     const res = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, category, agreeToRules }),
+      body: JSON.stringify({ content, category, agreeToRules, imageUrl: imageUrl || null }),
     });
 
     const json = await res.json();

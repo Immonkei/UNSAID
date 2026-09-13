@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import path from 'path';
 import { ENV } from './config/env';
 import { generalLimiter } from './middleware/rateLimit.middleware';
 import { errorHandler } from './middleware/error.middleware';
@@ -10,8 +11,15 @@ import adminRoutes from './routes/admin.routes';
 export const createApp = (): Express => {
   const app = express();
 
-  // Security Headers
-  app.use(helmet());
+  // Security Headers (allow cross-origin images for frontend)
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
+
+  // Serve static uploaded images
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   // CORS
   app.use(
