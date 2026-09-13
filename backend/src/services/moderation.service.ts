@@ -1,6 +1,6 @@
 import { prisma } from '../config/database';
 import { facebookService } from './facebook.service';
-import { ModerationStatus, ReportStatus, Prisma } from '@prisma/client';
+import { ModerationStatus, ReportStatus, Prisma } from '../generated/client';
 
 export class ModerationService {
   /**

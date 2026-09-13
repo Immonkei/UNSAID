@@ -6,7 +6,7 @@ import { ENV } from '../config/env';
 import { loginSchema } from '../validators/auth.validator';
 import { moderationService } from '../services/moderation.service';
 import { facebookService } from '../services/facebook.service';
-import { ModerationStatus, ReportStatus } from '@prisma/client';
+import { ModerationStatus, ReportStatus } from '../generated/client';
 
 export class AdminController {
   /**
