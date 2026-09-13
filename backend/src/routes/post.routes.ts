@@ -7,6 +7,9 @@ const router = Router();
 
 // Public routes
 router.get('/categories', (req, res) => postController.getCategories(req, res));
+router.get('/candle/status', (req, res, next) => postController.getCandleStatus(req, res, next));
+router.post('/candle/toggle', (req, res, next) => postController.toggleCandle(req, res, next));
+router.get('/random', (req, res, next) => postController.getRandomPost(req, res, next));
 router.get('/', (req, res, next) => postController.getPosts(req, res, next));
 router.get('/:id', (req, res, next) => postController.getPostById(req, res, next));
 
@@ -21,5 +24,9 @@ router.post('/', submissionLimiter, (req, res, next) => postController.createPos
 // User interactions
 router.post('/:id/report', (req, res, next) => postController.reportPost(req, res, next));
 router.post('/:id/like', (req, res, next) => postController.likePost(req, res, next));
+
+// Quiet Whispers (Unsent Replies)
+router.get('/:id/whispers', (req, res, next) => postController.getWhispers(req, res, next));
+router.post('/:id/whispers', submissionLimiter, (req, res, next) => postController.createWhisper(req, res, next));
 
 export default router;

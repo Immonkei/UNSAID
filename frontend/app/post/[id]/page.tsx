@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, ImageIcon, Share2, Check } from 'lucide-react';
+import { ArrowLeft, Heart, ImageIcon, Share2, Check, MessageCircle, Send, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { Post } from '../../../types/post';
+import { Post, WhisperItem } from '../../../types/post';
 import { api, resolveImageUrl } from '../../../lib/api';
 import QuoteCardModal from '../../../components/QuoteCardModal';
 import { Card, CardContent, CardFooter } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { Textarea } from '../../../components/ui/textarea';
 
 export default function SinglePostPage() {
   const params = useParams();
@@ -23,22 +24,52 @@ export default function SinglePostPage() {
   const [isLiking, setIsLiking] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [whispers, setWhispers] = useState<WhisperItem[]>([]);
+  const [whisperText, setWhisperText] = useState('');
+  const [sendingWhisper, setSendingWhisper] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    const fetchPost = async () => {
+    const fetchPostAndWhispers = async () => {
       try {
-        const data = await api.getPostById(id);
-        setPost(data);
-        setLikes(data.likeCount || 0);
+        const [postData, whispersData] = await Promise.all([
+          api.getPostById(id),
+          api.getWhispers(id).catch(() => []),
+        ]);
+        setPost(postData);
+        setLikes(postData.likeCount || 0);
+        setWhispers(whispersData);
+        if (postData?.content) {
+          const preview = postData.content.length > 50 ? `${postData.content.slice(0, 50)}...` : postData.content;
+          document.title = `“${preview}” | UNSAID`;
+        }
       } catch {
         setError('This thought could not be found or has not been approved yet.');
       } finally {
         setLoading(false);
       }
     };
-    fetchPost();
+    fetchPostAndWhispers();
   }, [id]);
+
+  const handleSendWhisper = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!whisperText.trim() || !post || sendingWhisper) return;
+
+    setSendingWhisper(true);
+    try {
+      const newWhisper = await api.createWhisper(post.id, whisperText.trim());
+      setWhispers((prev) => [...prev, newWhisper]);
+      setWhisperText('');
+      toast.success('Your quiet whisper was sent into the night.', {
+        description: 'Thank you for reminding a stranger they are not alone.',
+      });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Could not send whisper');
+    } finally {
+      setSendingWhisper(false);
+    }
+  };
 
   const handleLike = async () => {
     if (!post || isLiking) return;
@@ -119,6 +150,13 @@ export default function SinglePostPage() {
             </span>
           </div>
 
+          {post.recipient && (
+            <div className="flex items-center space-x-2 pt-1 text-sm text-[#7C99B8]">
+              <span className="font-mono uppercase tracking-widest text-xs text-neutral-500">To:</span>
+              <span className="font-serif italic font-light text-neutral-200 tracking-wide text-lg">{post.recipient}</span>
+            </div>
+          )}
+
           <blockquote className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 leading-relaxed whitespace-pre-wrap selection:bg-neutral-800 tracking-[0.01em]">
             &ldquo;{post.content}&rdquo;
           </blockquote>
@@ -181,6 +219,102 @@ export default function SinglePostPage() {
             onClose={() => setShowQuoteModal(false)}
           />
         </Card>
+      )}
+
+      {/* Quiet Whispers (Unsent Replies) Section */}
+      {post && (
+        <section id="whispers" className="space-y-6 pt-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+            <div className="flex items-center space-x-2 text-neutral-200">
+              <MessageCircle className="w-4 h-4 text-[#7C99B8]" />
+              <h2 className="font-serif text-lg font-light tracking-wide">
+                Quiet Whispers
+              </h2>
+              <span className="font-mono text-xs text-neutral-500">
+                ({whispers.length})
+              </span>
+            </div>
+            <span className="text-[11px] font-mono text-neutral-500 italic">
+              Gentle anonymous notes of understanding
+            </span>
+          </div>
+
+          {/* Whispers Feed */}
+          {whispers.length === 0 ? (
+            <div className="rounded-3xl border border-white/[0.06] bg-[#0c0f16]/50 p-8 text-center space-y-2">
+              <p className="font-serif italic text-neutral-400 text-sm">
+                No whispers left yet for this confession.
+              </p>
+              <p className="text-xs text-neutral-500 font-light">
+                Be the first stranger to leave a quiet note of warmth.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {whispers.map((w) => (
+                <div
+                  key={w.id}
+                  className="rounded-2xl border border-white/[0.06] bg-[#0c0f16]/60 backdrop-blur-md p-5 space-y-2.5 transition-all hover:border-white/[0.12]"
+                >
+                  <p className="text-sm font-serif font-light text-neutral-200 leading-relaxed whitespace-pre-wrap selection:bg-neutral-800">
+                    &ldquo;{w.content}&rdquo;
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500">
+                    <span className="italic text-[#7C99B8]/90">
+                      — {w.author}
+                    </span>
+                    <span>
+                      {new Date(w.createdAt).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Leave a Quiet Whisper Input */}
+          <form
+            onSubmit={handleSendWhisper}
+            className="rounded-3xl border border-white/[0.08] bg-[#0c0f16]/75 backdrop-blur-xl p-5 sm:p-6 space-y-3.5 shadow-xl"
+          >
+            <div className="flex items-center space-x-1.5 text-xs text-neutral-400">
+              <Sparkles className="w-3.5 h-3.5 text-[#7C99B8]" />
+              <span>Leave an anonymous quiet whisper for this person:</span>
+            </div>
+
+            <div className="relative">
+              <Textarea
+                value={whisperText}
+                onChange={(e) => setWhisperText(e.target.value)}
+                placeholder="I hear you. You’re not crazy for feeling that..."
+                maxLength={280}
+                rows={3}
+                className="bg-[#080a0f]/80 border-white/[0.08] focus:border-[#7C99B8]/70 text-xs sm:text-sm font-serif placeholder:font-sans placeholder:text-neutral-500 resize-none rounded-2xl p-4 text-neutral-200"
+              />
+              <div className="absolute right-3.5 bottom-3 text-[10px] font-mono text-neutral-500">
+                {whisperText.length}/280
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] text-neutral-500 italic font-mono">
+                100% Anonymous • No accounts
+              </span>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!whisperText.trim() || sendingWhisper}
+                className="rounded-full px-5 text-xs space-x-1.5 bg-neutral-200 text-neutral-950 font-medium hover:bg-white"
+              >
+                <Send className="w-3 h-3" />
+                <span>{sendingWhisper ? 'Whispering...' : 'Send Whisper'}</span>
+              </Button>
+            </div>
+          </form>
+        </section>
       )}
     </div>
   );

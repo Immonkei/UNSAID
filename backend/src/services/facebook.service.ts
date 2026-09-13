@@ -44,7 +44,8 @@ export class FacebookService {
       data: { facebookStatus: 'PUBLISHING' },
     });
 
-    const messageText = `"${post.content}"\n\n— Anonymous\n#${post.category.replace(/\s+/g, '')} #UNSAID`;
+    const dedication = post.recipient ? `To: ${post.recipient}\n\n` : '';
+    const messageText = `${dedication}"${post.content}"\n\n— Anonymous\n#${post.category.replace(/\s+/g, '')} #UNSAID`;
 
     try {
       const url = `https://graph.facebook.com/${ENV.FB_API_VERSION}/${ENV.FB_PAGE_ID}/feed`;

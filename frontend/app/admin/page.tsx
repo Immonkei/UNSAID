@@ -14,8 +14,13 @@ import {
   Flag,
   Inbox,
   CheckCircle2,
+  BarChart3,
+  Heart,
+  Layers,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
-import { AdminPost, ReportItem } from '../../types/post';
+import { AdminPost, ReportItem, AdminStats } from '../../types/post';
 import { api, getAdminToken, clearAdminToken, resolveImageUrl } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -28,6 +33,7 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [reports, setReports] = useState<ReportItem[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -45,9 +51,16 @@ export default function AdminDashboardPage() {
 
     setLoading(true);
     try {
+      // Fetch live stats alongside tab data
+      const statsPromise = api.adminGetStats(token);
+
       if (activeTab === 'reports') {
-        const res = await api.adminGetReports(token);
-        setReports(res.reports);
+        const [reportsRes, statsRes] = await Promise.all([
+          api.adminGetReports(token),
+          statsPromise,
+        ]);
+        setReports(reportsRes.reports);
+        setStats(statsRes);
       } else {
         const status =
           activeTab === 'pending'
@@ -56,12 +69,16 @@ export default function AdminDashboardPage() {
             ? 'APPROVED'
             : 'REJECTED';
 
-        const res = await api.adminGetPosts(token, {
-          status,
-          category: selectedCategory,
-          search: search.trim() || undefined,
-        });
-        setPosts(res.posts);
+        const [postsRes, statsRes] = await Promise.all([
+          api.adminGetPosts(token, {
+            status,
+            category: selectedCategory,
+            search: search.trim() || undefined,
+          }),
+          statsPromise,
+        ]);
+        setPosts(postsRes.posts);
+        setStats(statsRes);
       }
     } catch {
       clearAdminToken();
@@ -204,6 +221,67 @@ export default function AdminDashboardPage() {
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
           </Button>
+        </div>
+      </div>
+
+      {/* Live Analytics Dashboard Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
+        {/* Pending Queue */}
+        <div className="rounded-3xl border border-amber-950/40 bg-gradient-to-b from-[#16120b] to-[#0c0c11] p-5 shadow-lg relative overflow-hidden">
+          <div className="flex items-center justify-between text-neutral-400 mb-2">
+            <span className="text-[11px] font-mono tracking-wider uppercase text-amber-300/90">
+              Pending Queue
+            </span>
+            <Clock className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-3xl font-serif text-amber-200 font-light">
+            {stats ? stats.pendingPosts : '...'}
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-1">Awaiting moderation review</p>
+        </div>
+
+        {/* Live Approved */}
+        <div className="rounded-3xl border border-emerald-950/40 bg-gradient-to-b from-[#0b1611] to-[#0c0c11] p-5 shadow-lg relative overflow-hidden">
+          <div className="flex items-center justify-between text-neutral-400 mb-2">
+            <span className="text-[11px] font-mono tracking-wider uppercase text-emerald-300/90">
+              Approved Feed
+            </span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-3xl font-serif text-emerald-200 font-light">
+            {stats ? stats.approvedPosts : '...'}
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-1">Live confessions on unsaid.vercel.app</p>
+        </div>
+
+        {/* Total Thoughts */}
+        <div className="rounded-3xl border border-white/[0.07] bg-gradient-to-b from-[#10121a] to-[#0c0c11] p-5 shadow-lg relative overflow-hidden">
+          <div className="flex items-center justify-between text-neutral-400 mb-2">
+            <span className="text-[11px] font-mono tracking-wider uppercase text-[#7C99B8]">
+              Total Submitted
+            </span>
+            <Layers className="w-4 h-4 text-[#7C99B8]" />
+          </div>
+          <div className="text-3xl font-serif text-neutral-100 font-light">
+            {stats ? stats.totalPosts : '...'}
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-1">
+            {stats ? `${stats.rejectedPosts} archived / rejected` : '...'}
+          </p>
+        </div>
+
+        {/* Total Likes / Resonance */}
+        <div className="rounded-3xl border border-rose-950/40 bg-gradient-to-b from-[#180e12] to-[#0c0c11] p-5 shadow-lg relative overflow-hidden">
+          <div className="flex items-center justify-between text-neutral-400 mb-2">
+            <span className="text-[11px] font-mono tracking-wider uppercase text-rose-300/90">
+              Felt by Readers
+            </span>
+            <Heart className="w-4 h-4 text-rose-400" />
+          </div>
+          <div className="text-3xl font-serif text-rose-200 font-light">
+            {stats ? stats.totalLikes : '...'}
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-1">Total connection & likes</p>
         </div>
       </div>
 
@@ -376,6 +454,13 @@ export default function AdminDashboardPage() {
                         )}
                       </div>
                     </div>
+
+                    {post.recipient && (
+                      <div className="flex items-center space-x-2 text-xs text-[#7C99B8]">
+                        <span className="font-mono uppercase tracking-widest text-[10px] text-neutral-500">To:</span>
+                        <span className="font-serif italic font-light text-neutral-200">{post.recipient}</span>
+                      </div>
+                    )}
 
                     <p className="text-neutral-100 text-base sm:text-lg font-serif font-light leading-relaxed whitespace-pre-wrap">
                       &ldquo;{post.content}&rdquo;

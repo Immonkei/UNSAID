@@ -229,6 +229,21 @@ export class AdminController {
       next(err);
     }
   }
+
+  /**
+   * Get admin dashboard analytics and stats.
+   */
+  async getStats(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const stats = await moderationService.getStats();
+      res.status(200).json({
+        success: true,
+        data: stats,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const adminController = new AdminController();

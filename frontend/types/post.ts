@@ -14,6 +14,7 @@ export interface Post {
   id: string;
   content: string;
   category: Category | string;
+  recipient?: string | null;
   imageUrl?: string | null;
   author: 'Anonymous';
   createdAt: string;
@@ -24,6 +25,7 @@ export interface AdminPost {
   id: string;
   content: string;
   category: string;
+  recipient?: string | null;
   imageUrl?: string | null;
   moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   facebookStatus: 'NOT_PUBLISHED' | 'PUBLISHING' | 'PUBLISHED' | 'FAILED';
@@ -59,3 +61,22 @@ export interface Pagination {
   total: number;
   totalPages: number;
 }
+
+export interface AdminStats {
+  totalPosts: number;
+  pendingPosts: number;
+  approvedPosts: number;
+  rejectedPosts: number;
+  totalReports: number;
+  pendingReports: number;
+  totalLikes: number;
+}
+
+export interface WhisperItem {
+  id: string;
+  content: string;
+  author: string;
+  createdAt: string;
+}
+
+

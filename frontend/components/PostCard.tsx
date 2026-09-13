@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, Share2, ImageIcon, Sparkles } from 'lucide-react';
+import { Heart, Share2, ImageIcon, Sparkles, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Post } from '../types/post';
 import { api, resolveImageUrl } from '../lib/api';
@@ -86,12 +86,20 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
 
   return (
     <>
-      <Card className="group relative flex flex-col justify-between rounded-3xl bg-[#0c0c11]/80 backdrop-blur-xl border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:-translate-y-1 overflow-hidden h-fit">
+      <Card className="group relative flex flex-col justify-between rounded-3xl bg-[#0d1017]/75 backdrop-blur-2xl border border-white/[0.08] hover:border-[#7C99B8]/30 transition-all duration-500 hover:shadow-[0_16px_40px_rgba(0,0,0,0.65),0_0_30px_rgba(124,153,184,0.08)] hover:-translate-y-1 overflow-hidden h-fit">
         {/* Soft top gradient line */}
-        <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none" />
+        <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#7C99B8]/30 to-transparent pointer-events-none" />
+
+        {/* Subtle Watermark Quote Mark in background */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-4 -right-1 font-serif text-8xl text-white/[0.025] group-hover:text-white/[0.04] transition-colors pointer-events-none select-none"
+        >
+          “
+        </div>
 
         {/* Ambient subtle card glow on hover */}
-        <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-indigo-950/20 rounded-full blur-2xl group-hover:bg-indigo-900/30 transition-all pointer-events-none" />
+        <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-indigo-950/20 rounded-full blur-3xl group-hover:bg-[#7C99B8]/15 transition-all duration-700 pointer-events-none" />
 
         <CardContent className="p-6 sm:p-8 pb-4 sm:pb-4 space-y-4 relative z-10">
           <div className="flex items-center justify-between text-xs text-neutral-500">
@@ -102,6 +110,13 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
               {formattedDate}
             </span>
           </div>
+
+          {post.recipient && (
+            <div className="flex items-center space-x-2 pt-0.5 text-xs text-[#7C99B8]">
+              <span className="font-mono uppercase tracking-widest text-[10px] text-neutral-500">To:</span>
+              <span className="font-serif italic font-light text-neutral-200 tracking-wide text-sm">{post.recipient}</span>
+            </div>
+          )}
 
           {showFullLink ? (
             <Link href={`/post/${post.id}`} className="block group-hover:text-neutral-100 transition-colors">
@@ -136,7 +151,7 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
           </span>
 
           <div className="flex items-center space-x-1 sm:space-x-1.5">
-            {/* Felt This / Like button */}
+            {/* Felt This / Like button with heartbeat animation */}
             <Button
               variant={hasLiked ? 'secondary' : 'ghost'}
               size="sm"
@@ -149,10 +164,23 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
             >
               <Heart
                 className={`w-3.5 h-3.5 transition-transform duration-300 ${
-                  hasLiked ? 'fill-current scale-110 text-rose-400' : 'group-hover:scale-105'
+                  hasLiked ? 'fill-current text-rose-400 animate-heart-pulse' : 'group-hover:scale-110'
                 }`}
               />
               <span className="font-mono text-[11px] ml-1">{likes}</span>
+            </Button>
+
+            {/* Quiet Whispers link */}
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              title="Read or leave quiet whispers"
+              className="text-neutral-400 hover:text-[#7C99B8] hover:bg-white/[0.05]"
+            >
+              <Link href={`/post/${post.id}#whispers`}>
+                <MessageCircle className="w-3.5 h-3.5" />
+              </Link>
             </Button>
 
             {/* Quote Card Exporter */}

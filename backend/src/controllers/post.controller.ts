@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { postService } from '../services/post.service';
 import { storageService } from '../services/storage.service';
-import { createPostSchema, reportPostSchema, likePostSchema } from '../validators/post.validator';
+import { createPostSchema, reportPostSchema, likePostSchema, createWhisperSchema } from '../validators/post.validator';
 
 export class PostController {
   async createPost(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -10,7 +10,8 @@ export class PostController {
       const result = await postService.createPost(
         validated.content,
         validated.category,
-        validated.imageUrl
+        validated.imageUrl,
+        validated.recipient
       );
 
       res.status(201).json({
@@ -56,8 +57,10 @@ export class PostController {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
       const category = req.query.category as string | undefined;
+      const search = req.query.search as string | undefined;
+      const sort = (req.query.sort === 'popular' ? 'popular' : 'latest') as 'latest' | 'popular';
 
-      const result = await postService.getApprovedPosts(page, limit, category);
+      const result = await postService.getApprovedPosts(page, limit, category, search, sort);
 
       res.status(200).json({
         success: true,
@@ -78,6 +81,28 @@ export class PostController {
         res.status(404).json({
           success: false,
           message: 'Post not found or not approved',
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: post,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getRandomPost(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const excludeId = req.query.excludeId as string | undefined;
+      const post = await postService.getRandomPost(excludeId);
+
+      if (!post) {
+        res.status(404).json({
+          success: false,
+          message: 'No approved posts available yet',
         });
         return;
       }
@@ -133,6 +158,65 @@ export class PostController {
       success: true,
       data: categories,
     });
+  }
+
+  async getWhispers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const whispers = await postService.getWhispers(id);
+
+      res.status(200).json({
+        success: true,
+        data: whispers,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async createWhisper(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const validated = createWhisperSchema.parse(req.body);
+
+      const whisper = await postService.createWhisper(id, validated.content);
+
+      res.status(201).json({
+        success: true,
+        message: 'Your quiet whisper was received.',
+        data: whisper,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getCandleStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const identifier = (req.query.anonymousIdentifier as string) || (req.ip || 'anonymous_guest');
+      const status = await postService.getCandleStatus(identifier);
+
+      res.status(200).json({
+        success: true,
+        data: status,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async toggleCandle(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const identifier = (req.body?.anonymousIdentifier as string) || (req.ip || 'anonymous_guest');
+      const result = await postService.toggleCandle(identifier);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 

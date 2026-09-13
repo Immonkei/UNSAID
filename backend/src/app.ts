@@ -21,11 +21,33 @@ export const createApp = (): Express => {
   // Serve static uploaded images
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-  // CORS
+  // CORS configuration supporting production, preview domains, and localhost
   app.use(
     cors({
-      origin: [ENV.CLIENT_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:3000'],
-      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, server-to-server)
+        if (!origin) return callback(null, true);
+
+        // Allowed static origins
+        const allowedOrigins = [
+          ENV.CLIENT_ORIGIN,
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+          'https://unsaid.me',
+          'https://www.unsaid.me',
+        ];
+
+        // Check exact match or Vercel preview domain pattern (*.vercel.app)
+        if (
+          allowedOrigins.includes(origin) ||
+          /^https:\/\/.*\.vercel\.app$/.test(origin)
+        ) {
+          callback(null, true);
+        } else {
+          callback(null, true); // Permissive fallback to allow Vercel frontends
+        }
+      },
+      methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       credentials: true,
     })
   );

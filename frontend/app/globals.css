@@ -46,6 +46,91 @@ body {
   scrollbar-width: none;
 }
 
+/* Subtle Film Grain Texture Overlay */
+.film-grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Midnight Aurora Mesh Animations */
+@keyframes auroraDriftOne {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translate(40px, -30px) scale(1.15);
+    opacity: 0.38;
+  }
+}
+
+@keyframes auroraDriftTwo {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.22;
+  }
+  50% {
+    transform: translate(-50px, 40px) scale(1.1);
+    opacity: 0.32;
+  }
+}
+
+@keyframes auroraDriftThree {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.18;
+  }
+  50% {
+    transform: translate(30px, 50px) scale(1.2);
+    opacity: 0.28;
+  }
+}
+
+.animate-aurora-1 {
+  animation: auroraDriftOne 22s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: auroraDriftTwo 28s ease-in-out infinite reverse;
+}
+
+.animate-aurora-3 {
+  animation: auroraDriftThree 25s ease-in-out infinite;
+}
+
+/* Frosted Aurora Glass Utilities */
+.glass-panel {
+  background: rgba(14, 18, 26, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel:hover {
+  border-color: rgba(124, 153, 184, 0.25);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(124, 153, 184, 0.08);
+}
+
+/* Heart reaction pulse */
+@keyframes heartPulse {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-heart-pulse {
+  animation: heartPulse 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.25);
+}
+
 /* Hero Choreographed Load Animations */
 @keyframes heroGlowBloom {
   0% {
@@ -107,6 +192,20 @@ body {
 .animate-hero-cta {
   opacity: 0;
   animation: heroRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.62s forwards;
+}
+
+/* Shimmer beam on button hover */
+@keyframes buttonShimmer {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.animate-button-shimmer {
+  animation: buttonShimmer 3s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

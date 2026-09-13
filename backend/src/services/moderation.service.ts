@@ -200,6 +200,39 @@ export class ModerationService {
       },
     });
   }
+
+  /**
+   * Aggregate admin stats and counts.
+   */
+  async getStats() {
+    const [
+      totalPosts,
+      pendingPosts,
+      approvedPosts,
+      rejectedPosts,
+      totalReports,
+      pendingReports,
+      totalLikes,
+    ] = await Promise.all([
+      prisma.post.count(),
+      prisma.post.count({ where: { moderationStatus: ModerationStatus.PENDING } }),
+      prisma.post.count({ where: { moderationStatus: ModerationStatus.APPROVED } }),
+      prisma.post.count({ where: { moderationStatus: ModerationStatus.REJECTED } }),
+      prisma.report.count(),
+      prisma.report.count({ where: { status: ReportStatus.PENDING } }),
+      prisma.like.count(),
+    ]);
+
+    return {
+      totalPosts,
+      pendingPosts,
+      approvedPosts,
+      rejectedPosts,
+      totalReports,
+      pendingReports,
+      totalLikes,
+    };
+  }
 }
 
 export const moderationService = new ModerationService();

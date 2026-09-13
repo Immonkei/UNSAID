@@ -1,8 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Newsreader, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SerendipityModal from '../components/SerendipityModal';
 import { Toaster } from 'sonner';
 
 const serifFont = Newsreader({
@@ -18,10 +19,43 @@ const sansFont = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  themeColor: '#08090d',
+  colorScheme: 'dark',
+};
+
 export const metadata: Metadata = {
-  title: 'UNSAID — Say What You Can’t Say',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://unsaid.vercel.app'),
+  title: {
+    default: 'UNSAID — Say What You Can’t Say',
+    template: '%s | UNSAID',
+  },
   description:
-    'An anonymous cinematic sanctuary for the unspoken thoughts, midnight confessions, and quiet regrets we carry.',
+    'An anonymous sanctuary for the unspoken thoughts, midnight confessions, and quiet regrets we carry.',
+  keywords: [
+    'anonymous thoughts',
+    'unsaid feelings',
+    'confessions',
+    'emotional archive',
+    'midnight thoughts',
+    'unsaid words',
+  ],
+  authors: [{ name: 'Anonymous' }],
+  openGraph: {
+    title: 'UNSAID — Say What You Can’t Say',
+    description:
+      'An anonymous sanctuary for the unspoken thoughts, midnight confessions, and quiet regrets we carry.',
+    url: 'https://unsaid.vercel.app',
+    siteName: 'UNSAID',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'UNSAID — Say What You Can’t Say',
+    description:
+      'An anonymous sanctuary for the unspoken thoughts, midnight confessions, and quiet regrets we carry.',
+  },
 };
 
 export default function RootLayout({
@@ -31,18 +65,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${serifFont.variable} ${sansFont.variable}`}>
-      <body className="min-h-screen flex flex-col bg-[#050507] text-neutral-100 font-sans antialiased selection:bg-neutral-800 selection:text-neutral-100 relative overflow-x-hidden">
-        {/* Cinematic Melancholic Atmosphere & Vignette */}
+      <body className="min-h-screen flex flex-col bg-[#08090d] text-neutral-100 font-sans antialiased selection:bg-neutral-800 selection:text-neutral-100 relative overflow-x-hidden">
+        {/* Midnight Aurora Atmosphere & Vignette */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          {/* Top midnight glow */}
-          <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[850px] h-[480px] bg-gradient-to-b from-indigo-950/25 via-blue-950/15 to-transparent blur-[140px] rounded-full" />
-          {/* Deep violet emotional haze */}
-          <div className="absolute top-[45%] -left-48 w-[600px] h-[500px] bg-purple-950/10 blur-[160px] rounded-full" />
-          {/* Subtle warm heartbreak ember */}
-          <div className="absolute top-[75%] -right-48 w-[550px] h-[450px] bg-rose-950/10 blur-[150px] rounded-full" />
-          {/* Melancholic film grid & vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.75)_100%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_10%,#000_60%,transparent_100%)] opacity-80" />
+          {/* Top Dusty-Blue / Cyan Aurora Drifter */}
+          <div className="animate-aurora-1 absolute -top-40 left-1/3 w-[800px] h-[520px] bg-gradient-to-br from-[#7C99B8]/25 via-indigo-900/20 to-transparent blur-[130px] rounded-full" />
+
+          {/* Deep Twilight Indigo Aurora */}
+          <div className="animate-aurora-2 absolute top-[35%] -left-36 w-[680px] h-[580px] bg-gradient-to-tr from-blue-950/30 via-indigo-950/25 to-purple-950/20 blur-[150px] rounded-full" />
+
+          {/* Subtle Warm Violet Emotional Glow */}
+          <div className="animate-aurora-3 absolute top-[65%] -right-36 w-[640px] h-[520px] bg-gradient-to-bl from-purple-950/20 via-slate-900/30 to-indigo-950/20 blur-[140px] rounded-full" />
+
+          {/* Melancholic film grid, grain & vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(6,7,10,0.85)_100%)]" />
+          <div className="absolute inset-0 film-grain opacity-70" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_15%,#000_65%,transparent_100%)] opacity-90" />
         </div>
 
         <Navbar />
@@ -50,6 +88,9 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+
+        {/* Global Serendipity Floating Quick Discover */}
+        <SerendipityModal />
 
         {/* Global Cinematic Toast Provider */}
         <Toaster

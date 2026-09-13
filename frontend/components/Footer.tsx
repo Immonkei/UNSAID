@@ -8,8 +8,8 @@ export default function Footer() {
         <p className="text-neutral-500">
           UNSAID is completely anonymous. We never collect or publish your identity.
         </p>
-        <p className="text-neutral-500 text-[11px] flex items-center justify-center space-x-1">
-          <span>&copy; {new Date().getFullYear()} UNSAID.</span>
+        <p className="text-neutral-500 text-[11px] flex items-center justify-center space-x-1.5">
+          <span>@UNSAID</span>
           <span>•</span>
           <span>Developed by <span className="text-neutral-300 font-medium hover:text-[#7C99B8] transition-colors">Immonkei</span></span>
         </p>

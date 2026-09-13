@@ -18,6 +18,9 @@ router.patch('/posts/:id/reject', (req, res, next) => adminController.rejectPost
 router.delete('/posts/:id', (req, res, next) => adminController.deletePost(req, res, next));
 router.post('/posts/:id/facebook-publish', (req, res, next) => adminController.retryFacebookPublish(req, res, next));
 
+// Stats route
+router.get('/stats', (req, res, next) => adminController.getStats(req, res, next));
+
 // Report management
 router.get('/reports', (req, res, next) => adminController.getReports(req, res, next));
 router.patch('/reports/:id', (req, res, next) => adminController.updateReport(req, res, next));

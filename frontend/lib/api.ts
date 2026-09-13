@@ -1,4 +1,4 @@
-import { Post, AdminPost, ReportItem, Pagination } from '../types/post';
+import { Post, AdminPost, ReportItem, Pagination, AdminStats, WhisperItem } from '../types/post';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -46,10 +46,14 @@ export const api = {
   async getPosts(
     category?: string,
     page = 1,
-    limit = 20
+    limit = 20,
+    search?: string,
+    sort?: 'latest' | 'popular'
   ): Promise<{ posts: Post[]; pagination: Pagination }> {
     const params = new URLSearchParams();
     if (category && category !== 'All') params.append('category', category);
+    if (search && search.trim()) params.append('search', search.trim());
+    if (sort) params.append('sort', sort);
     params.append('page', page.toString());
     params.append('limit', limit.toString());
 
@@ -64,6 +68,16 @@ export const api = {
   async getPostById(id: string): Promise<Post> {
     const res = await fetch(`${API_BASE_URL}/posts/${id}`);
     if (!res.ok) throw new Error('Post not found');
+    const json = await res.json();
+    return json.data;
+  },
+
+  async getRandomPost(excludeId?: string): Promise<Post | null> {
+    const query = excludeId ? `?excludeId=${encodeURIComponent(excludeId)}` : '';
+    const res = await fetch(`${API_BASE_URL}/posts/random${query}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
     const json = await res.json();
     return json.data;
   },
@@ -86,12 +100,19 @@ export const api = {
     content: string,
     category: string,
     agreeToRules: boolean,
-    imageUrl?: string | null
+    imageUrl?: string | null,
+    recipient?: string | null
   ): Promise<{ id: string; message: string }> {
     const res = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, category, agreeToRules, imageUrl: imageUrl || null }),
+      body: JSON.stringify({
+        content,
+        category,
+        agreeToRules,
+        imageUrl: imageUrl || null,
+        recipient: recipient ? recipient.trim() : null,
+      }),
     });
 
     const json = await res.json();
@@ -122,6 +143,48 @@ export const api = {
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || 'Failed to submit report');
     return { message: json.message };
+  },
+
+  async getWhispers(postId: string): Promise<WhisperItem[]> {
+    const res = await fetch(`${API_BASE_URL}/posts/${postId}/whispers`, {
+      next: { revalidate: 5 },
+    });
+    if (!res.ok) throw new Error('Failed to fetch quiet whispers');
+    const json = await res.json();
+    return json.data;
+  },
+
+  async createWhisper(postId: string, content: string): Promise<WhisperItem> {
+    const res = await fetch(`${API_BASE_URL}/posts/${postId}/whispers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || 'Failed to send whisper');
+    return json.data;
+  },
+
+  async getCandleStatus(): Promise<{ totalCandles: number; hasLit: boolean }> {
+    const anonId = getAnonymousIdentifier();
+    const res = await fetch(`${API_BASE_URL}/posts/candle/status?anonymousIdentifier=${encodeURIComponent(anonId)}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Failed to load candle vigil');
+    const json = await res.json();
+    return json.data;
+  },
+
+  async toggleCandle(): Promise<{ totalCandles: number; hasLit: boolean }> {
+    const anonId = getAnonymousIdentifier();
+    const res = await fetch(`${API_BASE_URL}/posts/candle/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ anonymousIdentifier: anonId }),
+    });
+    if (!res.ok) throw new Error('Failed to update candle');
+    const json = await res.json();
+    return json.data;
   },
 
   // Admin APIs
@@ -221,6 +284,15 @@ export const api = {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
+    const json = await res.json();
+    return json.data;
+  },
+
+  async adminGetStats(token: string): Promise<AdminStats> {
+    const res = await fetch(`${API_BASE_URL}/admin/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('Failed to fetch admin stats');
     const json = await res.json();
     return json.data;
   },

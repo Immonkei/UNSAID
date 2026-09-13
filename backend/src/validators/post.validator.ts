@@ -34,6 +34,18 @@ export const createPostSchema = z.object({
   category: z.enum(VALID_CATEGORIES, {
     errorMap: () => ({ message: 'Please select a valid category' }),
   }),
+  recipient: z
+    .string()
+    .trim()
+    .max(60, { message: 'Recipient dedication cannot exceed 60 characters' })
+    .refine((val) => !EMAIL_REGEX.test(val), {
+      message: 'For your privacy, please do not include email addresses in the recipient field',
+    })
+    .refine((val) => !PHONE_REGEX.test(val), {
+      message: 'For your privacy, please do not include phone numbers in the recipient field',
+    })
+    .optional()
+    .nullable(),
   imageUrl: z.string().optional().nullable(),
   agreeToRules: z
     .boolean()
@@ -55,3 +67,18 @@ export const likePostSchema = z.object({
   // Fingerprint or random UUID stored in localStorage to prevent duplicate likes
   anonymousIdentifier: z.string().min(10).max(128).optional(),
 });
+
+export const createWhisperSchema = z.object({
+  content: z
+    .string({ required_error: 'Whisper content is required' })
+    .trim()
+    .min(2, { message: 'Whisper must be at least 2 characters' })
+    .max(280, { message: 'Quiet whispers cannot exceed 280 characters' })
+    .refine((val) => !EMAIL_REGEX.test(val), {
+      message: 'For your privacy, please do not include email addresses',
+    })
+    .refine((val) => !PHONE_REGEX.test(val), {
+      message: 'For your privacy, please do not include phone numbers',
+    }),
+});
+

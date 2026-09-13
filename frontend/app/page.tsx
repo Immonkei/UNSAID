@@ -3,8 +3,11 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { PenLine, Shield, HeartHandshake, EyeOff, Search, Sparkles, Moon } from 'lucide-react';
+import PostCard from '../components/PostCard';
 import CategoryFilter from '../components/CategoryFilter';
 import PostFeed from '../components/PostFeed';
+import CandleVigil from '../components/CandleVigil';
+import EmotionalTagBar, { POPULAR_TAGS } from '../components/EmotionalTagBar';
 import { Post, Pagination } from '../types/post';
 import { api } from '../lib/api';
 
@@ -12,6 +15,7 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [pagination, setPagination] = useState<Pagination>({
@@ -21,50 +25,60 @@ export default function HomePage() {
     totalPages: 1,
   });
 
-  const loadPosts = useCallback(async (cat: string, pageNum: number) => {
-    setLoading(true);
-    try {
-      const data = await api.getPosts(cat === 'All' ? undefined : cat, pageNum);
-      setPosts(data.posts);
-      setPagination(data.pagination);
-    } catch {
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadPosts = useCallback(
+    async (cat: string, pageNum: number, query: string, sort: 'latest' | 'popular') => {
+      setLoading(true);
+      try {
+        const data = await api.getPosts(
+          cat === 'All' ? undefined : cat,
+          pageNum,
+          20,
+          query.trim() || undefined,
+          sort
+        );
+        setPosts(data.posts);
+        setPagination(data.pagination);
+      } catch {
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
+  // Trigger search with 300ms debounce
   useEffect(() => {
-    loadPosts(selectedCategory, 1);
-  }, [selectedCategory, loadPosts]);
+    const handler = setTimeout(() => {
+      loadPosts(selectedCategory, 1, searchQuery, sortBy);
+    }, 280);
+
+    return () => clearTimeout(handler);
+  }, [selectedCategory, searchQuery, sortBy, loadPosts]);
 
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
+    setSelectedTag(null);
+  };
+
+  const handleTagSelect = (tag: string | null) => {
+    setSelectedTag(tag);
+    if (!tag) {
+      setSearchQuery('');
+    } else {
+      const match = POPULAR_TAGS.find((t) => t.tag === tag);
+      if (match?.categoryHint && selectedCategory === 'All') {
+        setSelectedCategory(match.categoryHint);
+      }
+      setSearchQuery(match ? match.label : `#${tag}`);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
-    loadPosts(selectedCategory, newPage);
+    loadPosts(selectedCategory, newPage, searchQuery, sortBy);
   };
 
-  // Filter & sort
-  const displayedPosts = useMemo(() => {
-    let list = [...posts];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (p) => p.content.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
-      );
-    }
-
-    if (sortBy === 'popular') {
-      list.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
-    }
-
-    return list;
-  }, [posts, searchQuery, sortBy]);
-
-  // Featured thought (most felt confession)
+  // Featured thought (most felt confession across loaded posts)
   const featuredPost = useMemo(() => {
     if (posts.length === 0) return null;
     return [...posts].sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0))[0];
@@ -111,9 +125,14 @@ export default function HomePage() {
         <div className="animate-hero-cta pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/submit"
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-300 text-neutral-950 font-semibold text-sm hover:opacity-95 transition-all hover:scale-[1.03] active:scale-[0.98] shadow-[0_4px_25px_rgba(255,255,255,0.12)] cursor-pointer"
+            className="group relative overflow-hidden w-full sm:w-auto flex items-center justify-center space-x-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-300 text-neutral-950 font-semibold text-sm hover:opacity-95 transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] shadow-[0_4px_25px_rgba(255,255,255,0.14),0_0_20px_rgba(124,153,184,0.15)] hover:shadow-[0_6px_30px_rgba(255,255,255,0.25),0_0_30px_rgba(124,153,184,0.3)] cursor-pointer"
           >
-            <PenLine className="w-4 h-4" />
+            {/* Shimmer reflection sweep */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/70 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-button-shimmer pointer-events-none"
+            />
+            <PenLine className="w-4 h-4 group-hover:rotate-[-8deg] transition-transform duration-300" />
             <span>Share Your Thought</span>
           </Link>
 
@@ -128,23 +147,42 @@ export default function HomePage() {
 
       {/* Featured / Spotlight Thought Banner */}
       {featuredPost && (
-        <section className="relative rounded-3xl overflow-hidden border border-white/[0.08] bg-gradient-to-b from-[#0e0e14]/90 via-[#0a0a0f]/80 to-[#060608] p-7 sm:p-11 shadow-2xl backdrop-blur-xl">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-56 h-56 bg-indigo-950/30 blur-3xl rounded-full pointer-events-none" />
-          <div className="flex items-center space-x-2 text-[11px] uppercase tracking-widest text-indigo-400 font-mono font-medium mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
+        <section className="relative rounded-3xl overflow-hidden border border-white/[0.1] bg-gradient-to-b from-[#121622]/90 via-[#0d1017]/85 to-[#08090d] p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(124,153,184,0.08)] backdrop-blur-2xl group">
+          {/* Ambient lantern bloom */}
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-80 h-80 bg-[#7C99B8]/25 blur-[110px] rounded-full pointer-events-none group-hover:bg-[#7C99B8]/30 transition-all duration-700" />
+          <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-indigo-950/25 blur-[100px] rounded-full pointer-events-none" />
+
+          {/* Top highlight beam */}
+          <div className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-[#7C99B8]/50 to-transparent pointer-events-none" />
+
+          {/* Background subtle watermark quote */}
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-10 right-4 font-serif text-9xl text-white/[0.03] pointer-events-none select-none font-bold"
+          >
+            “
+          </div>
+
+          <div className="flex items-center space-x-2 text-[11px] uppercase tracking-widest text-[#7C99B8] font-mono font-medium mb-4 relative z-10">
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Most Felt by Strangers</span>
           </div>
-          <Link href={`/post/${featuredPost.id}`} className="block group">
+
+          <Link href={`/post/${featuredPost.id}`} className="block relative z-10">
             <blockquote className="text-xl sm:text-2xl md:text-3xl font-serif font-light text-neutral-100 leading-relaxed group-hover:text-white transition-colors">
               &ldquo;{featuredPost.content}&rdquo;
             </blockquote>
           </Link>
-          <div className="mt-6 flex items-center justify-between text-xs text-neutral-500 font-mono">
-            <span>— Anonymous • #{featuredPost.category}</span>
-            <span className="text-rose-400/80">❤️ {featuredPost.likeCount || 0} felt this</span>
+
+          <div className="mt-8 flex items-center justify-between text-xs text-neutral-400 font-mono relative z-10 border-t border-white/[0.06] pt-4">
+            <span className="italic">— Anonymous • #{featuredPost.category}</span>
+            <span className="text-rose-300 font-medium">❤️ {featuredPost.likeCount || 0} felt this</span>
           </div>
         </section>
       )}
+
+      {/* Virtual Candle Vigil / Community Warmth */}
+      <CandleVigil />
 
       {/* Feed Section */}
       <section id="thoughts" className="space-y-6 pt-6">
@@ -153,26 +191,32 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 tracking-tight">
               Unspoken Archives
             </h2>
-            <p className="text-xs text-neutral-500 font-light">
+            <p className="text-xs text-neutral-400 font-light">
               Unfiltered thoughts written into the quiet by strangers.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+            {/* Category Filter Dropdown */}
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onSelectCategory={handleCategorySelect}
+            />
+
             {/* Search Input */}
-            <div className="relative flex-1 sm:w-60">
-              <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3.5 top-2.5" />
+            <div className="relative flex-1 sm:w-56">
+              <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3.5 top-2.5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search unsaid thoughts..."
-                className="w-full bg-[#0c0c11]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[#7C99B8]/70 focus:ring-1 focus:ring-[#7C99B8]/30 transition-all shadow-inner"
+                placeholder="Search..."
+                className="w-full bg-[#0f121a]/75 backdrop-blur-xl border border-white/[0.08] hover:border-white/[0.16] rounded-full pl-9 pr-3.5 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[#7C99B8]/70 focus:ring-1 focus:ring-[#7C99B8]/30 transition-all shadow-inner"
               />
             </div>
 
             {/* Sort Toggle */}
-            <div className="flex items-center bg-[#0c0c11]/90 p-1 rounded-full border border-white/[0.08] text-xs">
+            <div className="flex items-center bg-[#0f121a]/75 backdrop-blur-xl p-1 rounded-full border border-white/[0.08] text-xs">
               <button
                 onClick={() => setSortBy('latest')}
                 className={`px-3.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
@@ -197,15 +241,15 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Category Pills */}
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onSelectCategory={handleCategorySelect}
+        {/* Emotional Tag Quick Mood Bar */}
+        <EmotionalTagBar
+          selectedTag={selectedTag}
+          onSelectTag={handleTagSelect}
         />
 
         {/* Post Feed */}
         <PostFeed
-          posts={displayedPosts}
+          posts={posts}
           loading={loading}
           pagination={pagination}
           onPageChange={handlePageChange}

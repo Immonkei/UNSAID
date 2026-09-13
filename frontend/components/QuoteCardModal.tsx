@@ -68,10 +68,16 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
       ctx.textAlign = 'center';
       ctx.fillText('U N S A I D', width / 2, 140);
 
-      // Category badge
+      // Category badge & dedication
       ctx.fillStyle = '#a1a1aa';
       ctx.font = '18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillText(`#${post.category.toUpperCase()}`, width / 2, 185);
+
+      if (post.recipient) {
+        ctx.fillStyle = '#7C99B8';
+        ctx.font = 'italic 24px Georgia, Cambria, "Times New Roman", serif';
+        ctx.fillText(`To: ${post.recipient}`, width / 2, 225);
+      }
 
       // Wrapped Quote Text
       ctx.fillStyle = '#fafafa';
@@ -98,7 +104,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
       lines.push(currentLine.trim());
 
       const totalTextHeight = lines.length * lineHeight;
-      let startY = (height - totalTextHeight) / 2 + 20;
+      let startY = (height - totalTextHeight) / 2 + (post.recipient ? 40 : 20);
 
       for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], width / 2, startY);
@@ -113,7 +119,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
       // Tagline
       ctx.fillStyle = '#52525b';
       ctx.font = 'italic 16px Georgia, serif';
-      ctx.fillText('“Say what you can’t say” • unsaid.me', width / 2, height - 120);
+      ctx.fillText('“Say what you can’t say” • unsaid.vercel.app', width / 2, height - 120);
 
       // Trigger download
       const dataUrl = canvas.toDataURL('image/png');
@@ -162,8 +168,15 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
 
           {/* Brand header */}
           <div className="space-y-1 relative z-10">
-            <div className="flex items-center justify-center space-x-1.5 text-neutral-200">
-              <Feather className="w-3.5 h-3.5 text-neutral-300" />
+            <div className="flex items-center justify-center space-x-2 text-neutral-200">
+              <div className="w-5 h-5 rounded-lg overflow-hidden border border-white/[0.1] shadow-[0_0_8px_rgba(124,153,184,0.3)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.jpg"
+                  alt="UNSAID"
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <span className="font-serif font-bold tracking-[0.25em] text-xs uppercase">
                 UNSAID
               </span>
@@ -171,6 +184,13 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
             <Badge variant="secondary" className="font-mono text-[10px] text-neutral-400">
               #{post.category}
             </Badge>
+
+            {post.recipient && (
+              <div className="flex items-center justify-center space-x-1.5 pt-1 text-xs text-[#7C99B8]">
+                <span className="font-mono uppercase tracking-widest text-[9px] text-neutral-500">To:</span>
+                <span className="font-serif italic font-light text-neutral-200">{post.recipient}</span>
+              </div>
+            )}
           </div>
 
           {/* Quote text */}
@@ -196,7 +216,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
           <div className="pt-2 border-t border-white/[0.06] text-xs text-neutral-500 font-mono relative z-10 flex flex-col space-y-1">
             <span className="italic">— {post.author}</span>
             <span className="text-[10px] text-neutral-600 font-serif italic">
-              “Say what you can’t say” • unsaid.me
+              “Say what you can’t say” • unsaid.vercel.app
             </span>
           </div>
         </div>

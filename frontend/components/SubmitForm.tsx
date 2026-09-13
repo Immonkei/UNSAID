@@ -14,6 +14,9 @@ import {
   ImagePlus,
   X,
   Loader2,
+  HeartHandshake,
+  PhoneCall,
+  LifeBuoy,
 } from 'lucide-react';
 import { api, resolveImageUrl } from '../lib/api';
 import { toast } from 'sonner';
@@ -43,9 +46,23 @@ const PROMPT_CHIPS = [
   'I forgave you, but...',
 ];
 
+const RECIPIENT_SUGGESTIONS = [
+  'The one that got away',
+  'My younger self',
+  'Mom & Dad',
+  'Someone I lost',
+  'Myself',
+  'A stranger',
+  'You',
+];
+
+// Compassionate crisis detector (self-harm, suicide, severe crisis)
+const CRISIS_REGEX = /\b(suicide|kill\s*myself|end\s*my\s*life|want\s*to\s*die|self\s*harm|slit\s*my\s*wrists|hanging\s*myself|jump\s*off|take\s*all\s*my\s*pills|can'?t\s*go\s*on\s*anymore|better\s*off\s*dead)\b/i;
+
 export default function SubmitForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [content, setContent] = useState('');
+  const [recipient, setRecipient] = useState('');
   const [category, setCategory] = useState<string>('Overthinking');
   const [agreeToRules, setAgreeToRules] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -103,12 +120,13 @@ export default function SubmitForm() {
     setIsSubmitting(true);
 
     try {
-      await api.submitThought(content.trim(), category, agreeToRules, imageUrl);
+      await api.submitThought(content.trim(), category, agreeToRules, imageUrl, recipient.trim() || null);
       setIsSubmitted(true);
       toast.success('Your thought has been sent into the quiet', {
         description: 'Thank you for sharing your unsaid truth.',
       });
       setContent('');
+      setRecipient('');
       setImageUrl(null);
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Submission failed');
@@ -198,6 +216,49 @@ export default function SubmitForm() {
         </div>
       )}
 
+      {/* Gentle Crisis & Distress Care Banner */}
+      {CRISIS_REGEX.test(content) && (
+        <div className="mb-6 rounded-3xl bg-gradient-to-b from-[#18141d] to-[#0f0e16] border border-amber-500/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden animate-fadeIn">
+          {/* Ambient Warmth Glow */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="flex items-start space-x-3.5 relative z-10">
+            <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0 mt-0.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <HeartHandshake className="w-4 h-4" />
+            </div>
+
+            <div className="space-y-2 flex-1">
+              <h4 className="text-sm font-serif font-normal text-amber-100">
+                You are carrying so much right now. Please know you matter.
+              </h4>
+              <p className="text-xs text-neutral-300 leading-relaxed font-light">
+                If the weight feels impossible, you do not have to endure it in silence. Free, anonymous, and caring support is available 24/7 with people trained to listen:
+              </p>
+
+              <div className="pt-1 flex flex-wrap gap-2 text-xs">
+                <a
+                  href="tel:988"
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 font-mono text-[11px] transition-colors"
+                >
+                  <PhoneCall className="w-3 h-3" />
+                  <span>Call or Text 988 (Suicide & Crisis Lifeline)</span>
+                </a>
+
+                <a
+                  href="https://findahelpline.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-neutral-300 text-[11px] transition-colors"
+                >
+                  <LifeBuoy className="w-3 h-3 text-[#7C99B8]" />
+                  <span>International Helplines (findahelpline.com)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Prompts Spark */}
         {!previewMode && (
@@ -218,6 +279,20 @@ export default function SubmitForm() {
                 </button>
               ))}
             </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[10px] text-neutral-500 font-mono">Popular tags:</span>
+              {['#UnsentLetters', '#3AMThoughts', '#Heartache', '#LettingGo', '#Closure', '#FirstLove'].map((tag) => (
+                <button
+                  type="button"
+                  key={tag}
+                  onClick={() => handleApplyPrompt(tag)}
+                  className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#7C99B8]/10 hover:bg-[#7C99B8]/20 border border-[#7C99B8]/30 text-[#7C99B8] transition-colors cursor-pointer"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -228,6 +303,14 @@ export default function SubmitForm() {
               <Badge variant="secondary">{category}</Badge>
               <span className="font-mono text-[11px]">Just now</span>
             </div>
+
+            {recipient.trim() && (
+              <div className="flex items-center space-x-2 text-xs text-[#7C99B8]">
+                <span className="font-mono uppercase tracking-widest text-[10px] text-neutral-500">To:</span>
+                <span className="font-serif italic font-light text-neutral-200">{recipient.trim()}</span>
+              </div>
+            )}
+
             <p className="text-neutral-200 text-lg sm:text-xl font-serif font-light leading-relaxed whitespace-pre-wrap">
               {content.trim() ? `“${content}”` : '“Your thought will appear here...”'}
             </p>
@@ -248,14 +331,51 @@ export default function SubmitForm() {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <Textarea
-              rows={6}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Type whatever you've been holding back. Let your emotions breathe..."
-              maxLength={MAX_CHARS}
-            />
+          <div className="space-y-4">
+            {/* Recipient Dedication Field */}
+            <div className="space-y-2 p-3.5 rounded-2xl bg-neutral-950/50 border border-neutral-800/70">
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-neutral-400 font-mono flex items-center space-x-1.5">
+                  <span className="text-[#7C99B8]">To:</span>
+                  <span>Who is this unsaid letter for? (Optional)</span>
+                </label>
+                <span className="text-[10px] font-mono text-neutral-500">{recipient.length}/60</span>
+              </div>
+              <input
+                type="text"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value.slice(0, 60))}
+                placeholder="e.g. My younger self, The one that got away, S., Mom"
+                className="w-full bg-neutral-900/60 border border-neutral-800 focus:border-[#7C99B8]/60 focus:ring-1 focus:ring-[#7C99B8]/40 rounded-xl px-3.5 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 outline-none transition-colors"
+                maxLength={60}
+              />
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-neutral-500 mr-1">Quick ideas:</span>
+                {RECIPIENT_SUGGESTIONS.map((sug) => (
+                  <button
+                    type="button"
+                    key={sug}
+                    onClick={() => setRecipient(sug)}
+                    className={`text-[10px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                      recipient === sug
+                        ? 'bg-[#7C99B8]/20 text-[#7C99B8] border-[#7C99B8]/40'
+                        : 'bg-neutral-900/40 text-neutral-400 border-neutral-800/80 hover:text-neutral-200 hover:border-neutral-700'
+                    }`}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Textarea
+                rows={6}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Type whatever you've been holding back. Let your emotions breathe..."
+                maxLength={MAX_CHARS}
+              />
 
             <div className="flex justify-between items-center text-[11px] text-neutral-500 px-1">
               <span>Nothing will ever trace back to you</span>
@@ -315,6 +435,7 @@ export default function SubmitForm() {
               </Button>
             </div>
           </div>
+        </div>
         )}
 
         {/* Category Select */}
