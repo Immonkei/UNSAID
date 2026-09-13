@@ -86,7 +86,7 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
 
   return (
     <>
-      <Card className="group relative flex flex-col justify-between rounded-3xl bg-[#0c0c11]/80 backdrop-blur-xl border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:-translate-y-1 overflow-hidden">
+      <Card className="group relative flex flex-col justify-between rounded-3xl bg-[#0c0c11]/80 backdrop-blur-xl border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:-translate-y-1 overflow-hidden h-fit">
         {/* Soft top gradient line */}
         <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none" />
 
@@ -117,12 +117,13 @@ export default function PostCard({ post, showFullLink = true }: PostCardProps) {
 
           {/* Attached Image (if present) */}
           {resolvedImg && (
-            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] max-h-80 w-full bg-neutral-950/90 shadow-inner group/img">
+            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] max-h-72 w-full bg-neutral-950/90 shadow-inner group/img">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={resolvedImg}
                 alt="Memory attached to this thought"
-                className="w-full h-auto max-h-80 object-cover opacity-90 group-hover/img:opacity-100 transition-all duration-500"
+                className="w-full h-auto max-h-72 object-cover opacity-90 group-hover/img:opacity-100 transition-all duration-500 rounded-2xl"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
             </div>

@@ -49,9 +49,11 @@ export default function PostFeed({
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="columns-1 md:columns-2 gap-5 space-y-5 [column-fill:_balance]">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <div key={post.id} className="break-inside-avoid">
+            <PostCard post={post} />
+          </div>
         ))}
       </div>
 
