@@ -1,9 +1,25 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Feather, Plus, ShieldAlert } from 'lucide-react';
+import { Feather, Plus } from 'lucide-react';
 
 export default function Navbar() {
+  const router = useRouter();
+
+  // Hidden admin shortcut: Ctrl + Shift + A (or Cmd + Shift + A)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        router.push('/admin');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
+
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#09090b]/80 border-b border-neutral-800/60 transition-colors">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -30,13 +46,6 @@ export default function Navbar() {
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Leave a Thought</span>
-          </Link>
-          <Link
-            href="/admin"
-            className="p-2 text-neutral-500 hover:text-neutral-300 rounded-full hover:bg-neutral-900 transition-colors"
-            title="Moderation Portal"
-          >
-            <ShieldAlert className="w-4 h-4" />
           </Link>
         </div>
       </div>
