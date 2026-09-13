@@ -121,7 +121,7 @@ export default async function OpengraphImage() {
               letterSpacing: '0.05em',
             }}
           >
-            unsaid.vercel.app
+            unsaidthoughts.vercel.app
           </div>
         </div>
       </div>

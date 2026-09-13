@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://unsaid.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://unsaidthoughts.vercel.app'),
   title: {
     default: 'UNSAID — Say What You Can’t Say',
     template: '%s | UNSAID',
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     title: 'UNSAID — Say What You Can’t Say',
     description:
       'An anonymous sanctuary for the unspoken thoughts, midnight confessions, and quiet regrets we carry.',
-    url: 'https://unsaid.vercel.app',
+    url: 'https://unsaidthoughts.vercel.app',
     siteName: 'UNSAID',
     locale: 'en_US',
     type: 'website',

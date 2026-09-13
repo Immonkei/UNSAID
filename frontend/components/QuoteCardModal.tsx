@@ -119,7 +119,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
       // Tagline
       ctx.fillStyle = '#52525b';
       ctx.font = 'italic 16px Georgia, serif';
-      ctx.fillText('“Say what you can’t say” • unsaid.vercel.app', width / 2, height - 120);
+      ctx.fillText('“Say what you can’t say” • unsaidthoughts.vercel.app', width / 2, height - 120);
 
       // Trigger download
       const dataUrl = canvas.toDataURL('image/png');
@@ -216,7 +216,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
           <div className="pt-2 border-t border-white/[0.06] text-xs text-neutral-500 font-mono relative z-10 flex flex-col space-y-1">
             <span className="italic">— {post.author}</span>
             <span className="text-[10px] text-neutral-600 font-serif italic">
-              “Say what you can’t say” • unsaid.vercel.app
+              “Say what you can’t say” • unsaidthoughts.vercel.app
             </span>
           </div>
         </div>

@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
           <div className="text-3xl font-serif text-emerald-200 font-light">
             {stats ? stats.approvedPosts : '...'}
           </div>
-          <p className="text-[10px] text-neutral-500 mt-1">Live confessions on unsaid.vercel.app</p>
+          <p className="text-[10px] text-neutral-500 mt-1">Live confessions on unsaidthoughts.vercel.app</p>
         </div>
 
         {/* Total Thoughts */}
