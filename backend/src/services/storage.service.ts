@@ -57,28 +57,33 @@ export class StorageService {
           });
 
         if (error) {
-          console.error('[StorageService] Supabase upload failed, falling back to local storage:', error.message);
-        } else {
-          const { data } = this.supabase.storage.from(this.bucketName).getPublicUrl(uniqueFileName);
-          console.log(`[StorageService] Image successfully stored in Supabase: ${data.publicUrl}`);
-          return data.publicUrl;
+          console.error('[StorageService] Supabase upload failed:', error.message);
+          throw new Error(`Failed to upload to Supabase storage: ${error.message}`);
         }
+
+        const { data } = this.supabase.storage.from(this.bucketName).getPublicUrl(uniqueFileName);
+        console.log(`[StorageService] Image stored in Supabase: ${data.publicUrl}`);
+        return data.publicUrl;
       } catch (err) {
         console.error('[StorageService] Exception uploading to Supabase:', err);
+        throw err;
       }
-    } else {
-      console.info('[StorageService] SUPABASE_KEY not set in backend/.env, storing image locally.');
     }
 
-    // 2. Fallback: store locally in uploads/
-    const uploadDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    // In serverless environments, local disk is read-only.
+    // If Supabase is not available, write to /tmp or throw an informative error.
+    try {
+      const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, uniqueFileName);
+      await fs.promises.writeFile(filePath, fileBuffer);
+      return `/uploads/${uniqueFileName}`;
+    } catch (fsErr) {
+      console.error('[StorageService] Local disk write failed:', fsErr);
+      throw new Error('Image storage service is not configured. Please ensure SUPABASE_SERVICE_ROLE_KEY is set in Vercel.');
     }
-    const filePath = path.join(uploadDir, uniqueFileName);
-    await fs.promises.writeFile(filePath, fileBuffer);
-
-    return `/uploads/${uniqueFileName}`;
   }
 }
 
