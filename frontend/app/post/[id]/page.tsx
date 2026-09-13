@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, ImageIcon, Share2, Flag, Check } from 'lucide-react';
+import { ArrowLeft, Heart, ImageIcon, Share2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { Post } from '../../../types/post';
 import { api, resolveImageUrl } from '../../../lib/api';
 import QuoteCardModal from '../../../components/QuoteCardModal';
+import { Card, CardContent, CardFooter } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
 
 export default function SinglePostPage() {
   const params = useParams();
@@ -18,10 +22,6 @@ export default function SinglePostPage() {
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState('Spam');
-  const [isReporting, setIsReporting] = useState(false);
-  const [reportSuccess, setReportSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -46,8 +46,16 @@ export default function SinglePostPage() {
 
     const prevLikes = likes;
     const prevLiked = hasLiked;
-    setLikes((prev) => (hasLiked ? prev - 1 : prev + 1));
-    setHasLiked(!hasLiked);
+    const nextLiked = !hasLiked;
+    setLikes((prev) => (nextLiked ? prev + 1 : prev - 1));
+    setHasLiked(nextLiked);
+
+    if (nextLiked) {
+      toast('You felt this unsaid thought.', {
+        icon: '🖤',
+        description: 'Someone out there knows they are not alone.',
+      });
+    }
 
     try {
       const res = await api.likePost(post.id);
@@ -64,26 +72,13 @@ export default function SinglePostPage() {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
+    toast.success('Link copied into your hands', {
+      description: 'Share this thought with someone who understands.',
+    });
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleReport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!post) return;
-    setIsReporting(true);
-    try {
-      await api.reportPost(post.id, reportReason);
-      setReportSuccess(true);
-      setTimeout(() => {
-        setShowReportModal(false);
-        setReportSuccess(false);
-      }, 1500);
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Report failed');
-    } finally {
-      setIsReporting(false);
-    }
-  };
+  const resolvedImg = resolveImageUrl(post?.imageUrl);
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 py-6">
@@ -96,29 +91,26 @@ export default function SinglePostPage() {
       </Link>
 
       {loading ? (
-        <div className="rounded-3xl bg-neutral-900/40 border border-neutral-800/40 p-10 h-72 animate-pulse" />
+        <Card className="p-10 h-72 animate-pulse" />
       ) : error || !post ? (
-        <div className="text-center py-20 px-6 rounded-3xl border border-neutral-800 bg-neutral-900/40 space-y-4">
+        <Card className="text-center py-20 px-6 space-y-4">
           <p className="font-serif italic text-neutral-400 text-xl font-light">
             {error || 'Thought not found'}
           </p>
-          <Link
-            href="/"
-            className="inline-block px-5 py-2.5 rounded-full bg-neutral-100 text-neutral-950 text-xs font-semibold hover:bg-neutral-200 transition-colors"
-          >
-            Explore Other Thoughts
-          </Link>
-        </div>
+          <Button asChild>
+            <Link href="/">Explore Other Thoughts</Link>
+          </Button>
+        </Card>
       ) : (
-        <article className="relative rounded-3xl bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-8 sm:p-12 shadow-2xl space-y-8">
-          {/* Subtle Top Glow */}
-          <div className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent pointer-events-none" />
+        <Card className="relative p-8 sm:p-12 shadow-2xl space-y-8 overflow-hidden bg-[#0c0c11]/80 backdrop-blur-xl border-white/[0.07]">
+          {/* Subtle Top Glow Line */}
+          <div className="absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none" />
 
-          <div className="flex items-center justify-between text-xs text-neutral-400">
-            <span className="px-3 py-1 rounded-full bg-neutral-800/80 text-neutral-300 font-medium">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <Badge variant="secondary" className="font-mono text-xs">
               #{post.category}
-            </span>
-            <span className="font-mono text-[11px]">
+            </Badge>
+            <span className="font-mono text-[11px] italic">
               {new Date(post.createdAt).toLocaleDateString(undefined, {
                 year: 'numeric',
                 month: 'long',
@@ -127,63 +119,59 @@ export default function SinglePostPage() {
             </span>
           </div>
 
-          <blockquote className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 leading-relaxed whitespace-pre-wrap selection:bg-neutral-800">
+          <blockquote className="text-2xl sm:text-3xl font-serif font-light text-neutral-100 leading-relaxed whitespace-pre-wrap selection:bg-neutral-800 tracking-[0.01em]">
             &ldquo;{post.content}&rdquo;
           </blockquote>
 
-          {post.imageUrl && (
-            <div className="relative rounded-3xl overflow-hidden border border-neutral-800 max-h-[500px] w-full bg-neutral-950/80">
+          {resolvedImg && (
+            <div className="relative rounded-3xl overflow-hidden border border-white/[0.08] max-h-[500px] w-full bg-neutral-950/80 shadow-inner">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={resolveImageUrl(post.imageUrl) || ''}
+                src={resolvedImg}
                 alt="Memory attached to this thought"
                 className="w-full h-auto max-h-[500px] object-contain rounded-3xl"
               />
             </div>
           )}
 
-          <div className="pt-6 border-t border-neutral-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <span className="text-xs text-neutral-400 font-mono italic">
+          <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <span className="text-xs text-neutral-500 font-mono italic tracking-widest">
               — {post.author}
             </span>
 
             <div className="flex items-center space-x-2">
-              <button
+              <Button
+                variant={hasLiked ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={handleLike}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`rounded-full px-4 transition-all duration-300 ${
                   hasLiked
-                    ? 'text-rose-400 bg-rose-950/60 border border-rose-800/80 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
-                    : 'text-neutral-400 hover:text-rose-400 hover:bg-neutral-800/60 border border-neutral-800/80'
+                    ? 'text-rose-300 bg-rose-950/70 border border-rose-800/80 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
+                    : 'text-neutral-400 hover:text-rose-400'
                 }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${hasLiked ? 'fill-current' : ''}`} />
+                <Heart className={`w-3.5 h-3.5 ${hasLiked ? 'fill-current text-rose-400' : ''}`} />
                 <span>{likes} felt this</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowQuoteModal(true)}
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-neutral-300 bg-neutral-800/80 hover:bg-neutral-700/80 border border-neutral-700/60 transition-colors"
-                title="Generate shareable image"
+                className="rounded-full flex items-center space-x-1.5"
               >
                 <ImageIcon className="w-3.5 h-3.5" />
                 <span>Quote Card</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={handleCopyLink}
-                className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-full transition-colors"
                 title="Copy direct link"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-              </button>
-
-              <button
-                onClick={() => setShowReportModal(true)}
-                className="p-2 text-neutral-500 hover:text-amber-400 hover:bg-neutral-800 rounded-full transition-colors"
-                title="Report thought"
-              >
-                <Flag className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -192,53 +180,7 @@ export default function SinglePostPage() {
             isOpen={showQuoteModal}
             onClose={() => setShowQuoteModal(false)}
           />
-
-          {/* Report Modal */}
-          {showReportModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm">
-              <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-6 shadow-2xl space-y-4">
-                <h3 className="text-sm font-semibold text-neutral-200">Report this thought</h3>
-                {reportSuccess ? (
-                  <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-xs text-emerald-300 text-center">
-                    Report received.
-                  </div>
-                ) : (
-                  <form onSubmit={handleReport} className="space-y-4">
-                    <select
-                      value={reportReason}
-                      onChange={(e) => setReportReason(e.target.value)}
-                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs text-neutral-200 focus:outline-none"
-                    >
-                      <option value="Spam">Spam</option>
-                      <option value="Harassment">Harassment</option>
-                      <option value="Hate speech">Hate speech</option>
-                      <option value="Sexual content">Sexual content</option>
-                      <option value="Personal information">Personal information</option>
-                      <option value="Threat">Threat</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowReportModal(false)}
-                        className="px-3 py-1.5 text-xs text-neutral-400 hover:text-neutral-200"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isReporting}
-                        className="px-4 py-1.5 text-xs bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-lg"
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </div>
-          )}
-        </article>
+        </Card>
       )}
     </div>
   );

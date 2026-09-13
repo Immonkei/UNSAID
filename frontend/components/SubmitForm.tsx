@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { api, resolveImageUrl } from '../lib/api';
+import { toast } from 'sonner';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -104,6 +105,9 @@ export default function SubmitForm() {
     try {
       await api.submitThought(content.trim(), category, agreeToRules, imageUrl);
       setIsSubmitted(true);
+      toast.success('Your thought has been sent into the quiet', {
+        description: 'Thank you for sharing your unsaid truth.',
+      });
       setContent('');
       setImageUrl(null);
     } catch (err: unknown) {

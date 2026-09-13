@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Download, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { Post } from '../types/post';
 import {
   Dialog,
@@ -119,6 +120,9 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     link.download = `unsaid-${post.id.slice(0, 8)}.png`;
     link.href = canvasRef.current.toDataURL('image/png');
     link.click();
+    toast.success('Quote card saved to your device', {
+      description: 'Ready to share to your Instagram stories or memories.',
+    });
     setTimeout(() => setDownloading(false), 800);
   };
 
@@ -126,6 +130,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     const url = `${window.location.origin}/post/${post.id}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
+    toast.success('Link copied into your hands');
     setTimeout(() => setCopied(false), 2000);
   };
 
