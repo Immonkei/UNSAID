@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 import { api, setAdminToken } from '../../../lib/api';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -34,63 +37,65 @@ export default function AdminLoginPage() {
         <div className="w-12 h-12 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300">
           <Lock className="w-5 h-5" />
         </div>
-        <h1 className="text-2xl font-serif text-neutral-100">Moderator Access</h1>
-        <p className="text-xs text-neutral-400">
+        <h1 className="text-2xl font-serif text-neutral-100 font-light">Moderator Access</h1>
+        <p className="text-xs text-neutral-400 font-light">
           Sign in to review submissions and moderate content.
         </p>
       </div>
 
-      <form onSubmit={handleLogin} className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 sm:p-8 space-y-5">
-        {error && (
-          <div className="flex items-center space-x-2 p-3 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+      <Card className="p-6 sm:p-8">
+        <form onSubmit={handleLogin} className="space-y-5">
+          {error && (
+            <div className="flex items-center space-x-2 p-3 rounded-2xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        <div className="space-y-2">
-          <label className="block text-xs uppercase tracking-wider text-neutral-400 font-medium">
-            Email
-          </label>
-          <div className="relative">
-            <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5" />
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@unsaid.me"
-              className="w-full rounded-xl bg-neutral-950/80 border border-neutral-800 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-colors"
-            />
+          <div className="space-y-2">
+            <label className="block text-xs uppercase tracking-wider text-neutral-400 font-medium">
+              Email
+            </label>
+            <div className="relative">
+              <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3" />
+              <Input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@unsaid.me"
+                className="pl-10"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <label className="block text-xs uppercase tracking-wider text-neutral-400 font-medium">
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5" />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full rounded-xl bg-neutral-950/80 border border-neutral-800 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-colors"
-            />
+          <div className="space-y-2">
+            <label className="block text-xs uppercase tracking-wider text-neutral-400 font-medium">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3" />
+              <Input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="pl-10"
+              />
+            </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-neutral-100 text-neutral-950 text-xs sm:text-sm font-semibold hover:bg-neutral-200 transition-all disabled:opacity-50"
-        >
-          <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </form>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center space-x-2"
+          >
+            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

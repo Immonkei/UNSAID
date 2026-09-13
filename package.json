@@ -12,7 +12,8 @@
     "db:generate": "npm --prefix backend run prisma:generate",
     "db:migrate": "npm --prefix backend run prisma:migrate",
     "db:seed": "npm --prefix backend run seed",
-    "db:up": "docker compose up -d"
+    "db:up": "docker compose up -d",
+    "test:fb": "npm --prefix backend run test:fb"
   },
   "keywords": ["anonymous", "confessions", "nextjs", "express", "prisma", "meta-api"],
   "author": "",

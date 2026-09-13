@@ -1,8 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Download, X, Copy, Check } from 'lucide-react';
+import { Download, Copy, Check } from 'lucide-react';
 import { Post } from '../types/post';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog';
+import { Button } from './ui/button';
 
 interface QuoteCardModalProps {
   post: Post;
@@ -21,7 +29,6 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Canvas size (Instagram Story 1080x1350 or Square 1080x1080)
     const width = 1080;
     const height = 1080;
     canvas.width = width;
@@ -42,7 +49,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     ctx.fillStyle = radial;
     ctx.fillRect(0, 0, width, height);
 
-    // Delicate Border
+    // Border
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 2;
     ctx.strokeRect(60, 60, width - 120, height - 120);
@@ -60,7 +67,7 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     ctx.letterSpacing = '2px';
     ctx.fillText(`#${post.category.toUpperCase()}`, width / 2, 180);
 
-    // Large Quote Content in Serif
+    // Quote Content
     ctx.fillStyle = '#fafafa';
     ctx.font = 'italic 42px Georgia, Cambria, serif';
     ctx.letterSpacing = '0px';
@@ -85,7 +92,6 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     }
     lines.push(line.trim());
 
-    // Center vertically
     const totalTextHeight = lines.length * lineHeight;
     let startY = (height - totalTextHeight) / 2 + 30;
 
@@ -106,8 +112,6 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
     ctx.fillText('“Say what you can’t say” • unsaid.me', width / 2, height - 130);
   }, [isOpen, post]);
 
-  if (!isOpen) return null;
-
   const handleDownload = () => {
     if (!canvasRef.current) return;
     setDownloading(true);
@@ -126,49 +130,43 @@ export default function QuoteCardModal({ post, isOpen, onClose }: QuoteCardModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative max-w-md w-full rounded-2xl bg-neutral-900/90 border border-neutral-800 p-6 shadow-2xl space-y-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-neutral-200">Shareable Quote Card</h3>
-            <p className="text-xs text-neutral-400">Save as a high-res image for stories or posts</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md w-full">
+        <DialogHeader>
+          <DialogTitle>Shareable Quote Card</DialogTitle>
+          <DialogDescription>
+            Download as a high-resolution image for Instagram stories or posts.
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Canvas Preview */}
-        <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 shadow-inner flex items-center justify-center p-2">
+        <div className="rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950 p-2 shadow-inner flex items-center justify-center">
           <canvas
             ref={canvasRef}
-            className="w-full h-auto max-h-[380px] object-contain rounded-lg shadow-md"
+            className="w-full h-auto max-h-[380px] object-contain rounded-xl shadow-md"
           />
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <button
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={handleCopyLink}
-            className="flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl border border-neutral-700 bg-neutral-800 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Link Copied' : 'Copy Link'}</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="default"
+            className="flex-1"
             onClick={handleDownload}
             disabled={downloading}
-            className="flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-neutral-100 text-neutral-950 text-xs font-semibold hover:bg-neutral-200 transition-all hover:scale-[1.02] shadow-sm"
           >
             <Download className="w-4 h-4" />
             <span>{downloading ? 'Exporting...' : 'Save Image'}</span>
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
