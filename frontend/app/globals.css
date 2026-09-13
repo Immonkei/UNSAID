@@ -45,3 +45,87 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hero Choreographed Load Animations */
+@keyframes heroGlowBloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes heroRise {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroUnderlineExpand {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-hero-glow {
+  opacity: 0;
+  animation: heroGlowBloom 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+}
+
+.animate-hero-eyebrow {
+  opacity: 0;
+  animation: heroRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
+.animate-hero-headline {
+  opacity: 0;
+  animation: heroRise 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.28s forwards;
+}
+
+.animate-hero-underline {
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: heroUnderlineExpand 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.42s forwards;
+}
+
+.animate-hero-subtext {
+  opacity: 0;
+  animation: heroRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.50s forwards;
+}
+
+.animate-hero-cta {
+  opacity: 0;
+  animation: heroRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.62s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-glow,
+  .animate-hero-eyebrow,
+  .animate-hero-headline,
+  .animate-hero-subtext,
+  .animate-hero-cta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-hero-glow {
+    opacity: 0.22 !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  .animate-hero-underline {
+    animation: none !important;
+    transform: scaleX(1) !important;
+  }
+}
+

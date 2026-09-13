@@ -74,37 +74,54 @@ export default function HomePage() {
     <div className="space-y-16 sm:space-y-20">
       {/* Cinematic Melancholic Hero Section */}
       <section className="text-center py-12 sm:py-24 space-y-8 max-w-2xl mx-auto relative">
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-neutral-900/90 border border-white/[0.08] text-neutral-400 text-xs font-mono shadow-inner tracking-wider">
-          <Moon className="w-3.5 h-3.5 text-indigo-400" />
-          <span>The midnight archive of unspoken feelings</span>
+        {/* 1. Accent Radial Glow Bloom */}
+        <div
+          aria-hidden="true"
+          className="animate-hero-glow absolute top-1/2 left-1/2 w-[480px] sm:w-[620px] h-[340px] rounded-full blur-3xl pointer-events-none -z-10"
+          style={{
+            background: 'radial-gradient(ellipse at center, #7C99B8 0%, rgba(124, 153, 184, 0) 70%)',
+          }}
+        />
+
+        {/* 2. Eyebrow Pill */}
+        <div className="animate-hero-eyebrow inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-neutral-900/90 border border-white/[0.08] text-neutral-300 text-xs font-mono shadow-inner tracking-wider">
+          <Sparkles className="w-3.5 h-3.5 text-[#7C99B8]" />
+          <span>An anonymous sanctuary for what you never said</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-light tracking-tight text-neutral-100 leading-[1.12]">
+        {/* 3. Headline with 4. Animated Draw Underline */}
+        <h1 className="animate-hero-headline text-4xl sm:text-6xl md:text-7xl font-serif font-light tracking-tight text-neutral-100 leading-[1.12]">
           Say what you{' '}
-          <span className="italic font-normal underline decoration-neutral-700 underline-offset-[10px]">
+          <span className="relative inline-block italic font-normal">
             can&apos;t say
+            <span
+              aria-hidden="true"
+              className="animate-hero-underline absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[1.5px] sm:h-[2px] bg-[#7C99B8] rounded-full"
+            />
           </span>
           .
         </h1>
 
-        <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed max-w-xl mx-auto font-serif italic selection:bg-neutral-800">
+        {/* 5. Subtext */}
+        <p className="animate-hero-subtext text-sm sm:text-base text-neutral-400 font-light leading-relaxed max-w-xl mx-auto font-serif italic selection:bg-neutral-800">
           &ldquo;Somewhere in the quiet of the night, the words we swallowed hurt the most. Release them here into the dark — no judgment, no accounts, totally anonymous.&rdquo;
         </p>
 
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* 6. Action Buttons */}
+        <div className="animate-hero-cta pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/submit"
             className="w-full sm:w-auto flex items-center justify-center space-x-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-300 text-neutral-950 font-semibold text-sm hover:opacity-95 transition-all hover:scale-[1.03] active:scale-[0.98] shadow-[0_4px_25px_rgba(255,255,255,0.12)] cursor-pointer"
           >
             <PenLine className="w-4 h-4" />
-            <span>Leave a Confession</span>
+            <span>Share Your Thought</span>
           </Link>
 
           <a
             href="#thoughts"
             className="w-full sm:w-auto px-7 py-3.5 rounded-full border border-white/[0.08] bg-[#0c0c11]/80 backdrop-blur-md text-neutral-300 font-medium text-sm hover:bg-neutral-800/80 hover:text-white transition-all cursor-pointer"
           >
-            Read the Unsaid
+            Read Confessions
           </a>
         </div>
       </section>
